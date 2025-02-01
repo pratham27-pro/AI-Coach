@@ -6,6 +6,7 @@ import Signup from './Components/Auth/Signup.jsx';
 import Medical from './Components/Auth/Medical.jsx';
 import Allergies from './Components/Auth/Allergies.jsx';
 import Fitness from './Components/Auth/Fitness.jsx';
+import Diet from './Components/Diet.jsx';
 
 function App() {
   const router = createBrowserRouter([
@@ -28,6 +29,10 @@ function App() {
     {
       path: '/fitness',
       element: <Fitness/>
+    },
+    {
+      path: '/diet',
+      element: <Diet/>
     }
   ])
   
