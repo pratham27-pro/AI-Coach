@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useDispatch } from "react-redux";
-import { signinSuccess } from "../redux/user/userSlice.js"; 
+import { signinSuccess } from "../../redux/user/userSlice.js"; 
 
 const Signup = ({ isLogin, toggleAuthMode }) => {
   const dispatch = useDispatch();
@@ -11,10 +11,7 @@ const Signup = ({ isLogin, toggleAuthMode }) => {
     height: "",
     weight: "",
     gender: "",
-    fitnessGoal: "",
-    medicalHistory: "",
-    allergies: "",
-    menstruationCycle: "",
+    fitnessGoal: ""
   });
 
   const handleChange = (e) => {
@@ -51,13 +48,10 @@ const Signup = ({ isLogin, toggleAuthMode }) => {
               <option value="Muscle Gain">Muscle Gain</option>
               <option value="General Fitness">General Fitness</option>
             </select>
-            <textarea className="w-full p-2 mb-2 border rounded" name="medicalHistory" placeholder="Medical History" onChange={handleChange} required />
-            <textarea className="w-full p-2 mb-2 border rounded" name="allergies" placeholder="Allergies" onChange={handleChange} required />
-            <input className="w-full p-2 mb-2 border rounded" type="date" name="menstruationCycle" placeholder="Menstruation Cycle Start Date" onChange={handleChange} required />
           </>
         )}
         <button className="w-full bg-blue-500 text-white py-2 rounded mt-2" type="submit">
-          {isLogin ? "Login" : "Sign Up"}
+          Next
         </button>
       </form>
       <p className="mt-4 cursor-pointer text-blue-500" onClick={toggleAuthMode}>
