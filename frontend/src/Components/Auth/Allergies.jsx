@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 
-const Allergies = () => {
+const Allergies = ({
+  formData, handleChange, prevStep, handleSubmit
+}) => {
   const [selectedAllergies, setSelectedAllergies] = useState([]);
   const [otherAllergy, setOtherAllergy] = useState("");
 
@@ -31,6 +33,17 @@ const Allergies = () => {
     }
   };
 
+  const handleFinalSubmit = (e) => {
+    e.preventDefault();
+    handleChange({
+      allergies: {
+        allergies: selectedAllergies,
+        otherAllergy,
+      },
+    });
+    handleSubmit(); // Submit all data to the backend
+  };
+
   return (
     <div className="p-6 sm:p-8 max-w-lg mx-auto bg-white shadow-xl rounded-2xl text-center transition-all duration-300 ease-in-out transform hover:scale-105">
       <h2 className="text-3xl font-bold mb-6 text-gray-800">Common Allergies</h2>
@@ -57,12 +70,21 @@ const Allergies = () => {
             onChange={(e) => setOtherAllergy(e.target.value)}
           />
         )}
-        <button
-          type="submit"
-          className="mt-6 w-full bg-blue-500 text-white py-3 rounded-lg text-lg font-semibold shadow-md hover:bg-blue-600 transition-all duration-200"
-        >
-          Save & Continue
-        </button>
+        <div className="mt-6 flex justify-between">
+          <button
+            type="button"
+            onClick={prevStep}
+            className="bg-gray-500 text-white py-2 px-4 rounded-lg hover:bg-gray-600 transition-colors"
+          >
+            Previous
+          </button>
+          <button
+            type="submit"
+            className="bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition-colors"
+          >
+            Submit
+          </button>
+        </div>
       </form>
     </div>
   );

@@ -1,8 +1,10 @@
 import React, { useState } from "react";
 
-const Medical = () => {
-  const [selectedConditions, setSelectedConditions] = useState([]);
-  const [otherDisease, setOtherDisease] = useState("");
+const Medical = ({
+  formData, handleChange, nextStep, prevStep
+}) => {
+  const [selectedConditions, setSelectedConditions] = useState(formData.medicalConditions.conditions);
+  const [otherDisease, setOtherDisease] = useState(formData.medicalConditions.otherDisease);
 
   const conditions = [
     "Diabetes",
@@ -27,6 +29,17 @@ const Medical = () => {
         return newSelection.filter((item) => item !== "None of These");
       });
     }
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    handleChange({
+      medicalConditions: {
+        conditions: selectedConditions,
+        otherDisease,
+      },
+    });
+    nextStep(); // Move to the next step
   };
 
   return (
@@ -56,10 +69,17 @@ const Medical = () => {
           />
         )}
         <button
-          type="submit"
-          className="mt-6 w-full bg-blue-500 text-white py-3 rounded-lg text-lg font-semibold shadow-md hover:bg-blue-600 transition-all duration-200"
-        >
-          Save & Continue
+            type="button"
+            onClick={prevStep}
+            className="bg-gray-500 text-white py-2 px-4 rounded-lg hover:bg-gray-600 transition-colors"
+          >
+            Previous
+          </button>
+          <button
+            type="submit"
+            className="bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition-colors"
+          >
+            Next
         </button>
       </form>
     </div>

@@ -7,6 +7,7 @@ import Medical from './Components/Auth/Medical.jsx';
 import Allergies from './Components/Auth/Allergies.jsx';
 import Fitness from './Components/Auth/Fitness.jsx';
 import Diet from './Components/Diet.jsx';
+import Profile from './Components/Auth/Profile.jsx';
 
 function App() {
   const router = createBrowserRouter([
@@ -33,6 +34,10 @@ function App() {
     {
       path: '/diet',
       element: <Diet/>
+    },
+    {
+      path: '/profile',
+      element: <Profile/>
     }
   ])
   

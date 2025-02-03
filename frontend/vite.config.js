@@ -4,8 +4,23 @@ import tailwindcss from '@tailwindcss/vite';
 
 // https://vite.dev/config/
 export default defineConfig({
+  base: '/', 
+  build: {
+    outDir: 'dist',
+    sourcemap: true,
+  },
   plugins: [
     react(),
     tailwindcss()
   ],
+  server: {
+    proxy: {
+      // Proxy API calls during development
+      '/api': {
+        target: 'http://localhost:8000', // Local backend URL
+        changeOrigin: true,
+        secure: false,
+      },
+    },
+  },
 })

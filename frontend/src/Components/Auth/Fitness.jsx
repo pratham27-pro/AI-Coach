@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 
-const Fitness = () => {
+const Fitness = ({
+  formData, handleChange, nextStep, prevStep
+}) => {
   const [fitnessLevel, setFitnessLevel] = useState("");
   const [dietType, setDietType] = useState("");
   const [fitnessGoal, setFitnessGoal] = useState("");
@@ -8,9 +10,14 @@ const Fitness = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    alert(
-      `Fitness Level: ${fitnessLevel}\nDiet Type: ${dietType}\nFitness Goal: ${fitnessGoal}\nActivity Level: ${activityLevel}`
-    );
+    handleChange({
+      fitnessDetails: {
+        fitnessLevel,
+        dietType,
+        activityLevel,
+      },
+    });
+    nextStep(); // Move to the next step
   };
 
   return (
@@ -125,12 +132,19 @@ const Fitness = () => {
           </div>
 
           {/* Submit Button */}
-          <div className="mt-8">
+          <div className="mt-6 flex justify-between">
+            <button
+              type="button"
+              onClick={prevStep}
+              className="bg-gray-500 text-white py-2 px-4 rounded-lg hover:bg-gray-600 transition-colors"
+            >
+              Previous
+            </button>
             <button
               type="submit"
-              className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors"
+              className="bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition-colors"
             >
-              Submit
+              Next
             </button>
           </div>
         </form>
