@@ -1,13 +1,15 @@
 import React, { useState } from "react";
-import Signup from "./Signup.jsx";
-import Medical from "./Medical.jsx";
-import Fitness from "./Fitness.jsx";
-import Allergies from "./Allergies.jsx";
+import { useDispatch } from "react-redux";
+import { signinStart, signinSuccess, signinFailure } from "./userSlice";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
+import Signup from "./Signup";
+import Medical from "./Medical";
+import Fitness from "./Fitness";
+import Allergies from "./Allergies";
 
-const Profile = () => {
-  const [step, setStep] = useState(1); 
+const MultiStepSignup = () => {
+  const dispatch = useDispatch();
+  const [step, setStep] = useState(1); // Current step
   const [formData, setFormData] = useState({
     // Step 1: Signup
     name: "",
@@ -46,17 +48,17 @@ const Profile = () => {
     setFormData((prev) => ({ ...prev, ...data }));
   };
 
-  const navigate = useNavigate();
-
   // Handle final submission
   const handleSubmit = async () => {
+    dispatch(signinStart()); // Start loading
     try {
-      const response = await axios.post("http://localhost:8000/signup", formData);
+      const response = await axios.post("http://localhost:5000/signup", formData);
+      dispatch(signinSuccess(response.data)); // Save user data in Redux store
       alert("Signup successful! Redirecting...");
-      navigate("/");
       console.log(response.data);
     } catch (error) {
       console.error("Error during signup:", error);
+      dispatch(signinFailure(error.message)); // Handle error
       alert("Signup failed. Please try again.");
     }
   };
@@ -86,4 +88,4 @@ const Profile = () => {
   );
 };
 
-export default Profile;
+export default MultiStepSignup;
