@@ -75,13 +75,10 @@ const Home = () => {
   ];
 
   return (
-    <div className={`min-h-screen bg-white"}`}>
-      {/* Navigation */}
-      <Nav />
-
-      {/* Hero Section */}
-      <section className="pt-20 pb-32 relative overflow-hidden bg-gradient-to-br from-blue-50 to-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+    <>
+    <Nav/>
+    <div className="pt-20 pb-32 relative overflow-hidden bg-gradient-to-br from-blue-50 to-white">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="text-center">
           <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold text-gray-900 mb-6">
             Transform Your Fitness Journey with{" "}
@@ -92,18 +89,16 @@ const Home = () => {
             AI-powered coaching that adapts to your progress.
           </p>
 
-          {/* Regular Button with Hover and Tap Effects */}
+          {/* Simplified button */}
           <button
-            onClick={toProfile} // Navigate to the profile page
-            onMouseEnter={handleHover}  // Scale the button on hover
-            onMouseLeave={handleMouseLeave} // Return scale to normal on leave
-            onMouseDown={handleMouseDown}  // Scale on click (tap effect)
-            onMouseUp={handleMouseUp}  // Return scale to hover state on mouse up
+            onClick={toProfile} // Trigger navigation to profile
             className="bg-blue-600 text-white px-8 py-4 rounded-full text-lg font-semibold hover:bg-blue-700 transition-colors shadow-lg hover:shadow-xl"
+            style={{ zIndex: 10, position: 'relative' }} // Ensure it is clickable
           >
             Start Your Journey
           </button>
         </div>
+      </div>
 
         {/* Decorative elements */}
         <div className="absolute top-0 left-0 w-full h-full z-0">
@@ -120,8 +115,7 @@ const Home = () => {
             className="w-50% max-w-2xl"
           />
         </div>
-      </div>
-    </section>
+    
 
 
 
@@ -205,6 +199,7 @@ const Home = () => {
 </section>
   <Footer/>
 </div>
+</>
   );
 };
 
