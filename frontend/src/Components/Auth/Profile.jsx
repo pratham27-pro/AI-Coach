@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useDispatch } from "react-redux";
-import { signinStart, signinSuccess, signinFailure } from "./userSlice";
+import { signinStart, signinSuccess, signinFailure } from "../../redux/user/userSlice.js"
 import axios from "axios";
 import Signup from "./Signup";
 import Medical from "./Medical";

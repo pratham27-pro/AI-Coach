@@ -4,10 +4,31 @@ import { FiMenu, FiX, FiMoon, FiSun } from "react-icons/fi";
 import { FaDumbbell, FaRobot, FaChartLine, FaHeartbeat } from "react-icons/fa";
 import Nav from "./Nav.jsx";
 import Footer from "./Footer.jsx";
+import { Link, useNavigate } from "react-router-dom";
 
 const Home = () => {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const navigate = useNavigate();
+  const toProfile = () => {
+    navigate("/profile");
+  }
+
+  const handleHover = (e) => {
+    e.target.style.transform = 'scale(1.05)';
+  };
+
+  const handleMouseLeave = (e) => {
+    e.target.style.transform = 'scale(1)';
+  };
+
+  const handleMouseDown = (e) => {
+    e.target.style.transform = 'scale(0.95)';
+  };
+
+  const handleMouseUp = (e) => {
+    e.target.style.transform = 'scale(1.05)';
+  };
 
   const features = [
     {
@@ -60,52 +81,49 @@ const Home = () => {
 
       {/* Hero Section */}
       <section className="pt-20 pb-32 relative overflow-hidden bg-gradient-to-br from-blue-50 to-white">
-  <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
-      className="text-center"
-    >
-      <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold text-gray-900 mb-6">
-        Transform Your Fitness Journey with{" "}
-        <span className="text-blue-600">AI</span>
-      </h1>
-      <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto leading-relaxed">
-        Experience personalized workout plans, real-time form correction, and
-        AI-powered coaching that adapts to your progress.
-      </p>
-      <motion.button
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
-        className="bg-blue-600 text-white px-8 py-4 rounded-full text-lg font-semibold hover:bg-blue-700 transition-colors shadow-lg hover:shadow-xl"
-      >
-        Start Your Journey
-      </motion.button>
-    </motion.div>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <div className="text-center">
+          <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold text-gray-900 mb-6">
+            Transform Your Fitness Journey with{" "}
+            <span className="text-blue-600">AI</span>
+          </h1>
+          <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto leading-relaxed">
+            Experience personalized workout plans, real-time form correction, and
+            AI-powered coaching that adapts to your progress.
+          </p>
 
-    {/* Decorative elements */}
-    <div className="absolute top-0 left-0 w-full h-full z-0">
-      {/* Gradient circles */}
-      <div className="absolute w-64 h-64 bg-blue-100 rounded-full opacity-20 -top-32 -left-32"></div>
-      <div className="absolute w-96 h-96 bg-blue-200 rounded-full opacity-20 -bottom-48 -right-48"></div>
-    </div>
+          {/* Regular Button with Hover and Tap Effects */}
+          <button
+            onClick={toProfile} // Navigate to the profile page
+            onMouseEnter={handleHover}  // Scale the button on hover
+            onMouseLeave={handleMouseLeave} // Return scale to normal on leave
+            onMouseDown={handleMouseDown}  // Scale on click (tap effect)
+            onMouseUp={handleMouseUp}  // Return scale to hover state on mouse up
+            className="bg-blue-600 text-white px-8 py-4 rounded-full text-lg font-semibold hover:bg-blue-700 transition-colors shadow-lg hover:shadow-xl"
+          >
+            Start Your Journey
+          </button>
+        </div>
 
-    {/* Animated illustration or image */}
-    <motion.div
-      initial={{ opacity: 0, scale: 0.8 }}
-      animate={{ opacity: 1, scale: 1 }}
-      transition={{ duration: 0.8, delay: 0.5 }}
-      className="mt-16 flex justify-center"
-    >
-      <img
-        src="/fotu.png" // Replace with your illustration or image
-        alt="Fitness Illustration"
-        className="w-50% max-w-2xl"
-      />
-    </motion.div>
-  </div>
-</section>
+        {/* Decorative elements */}
+        <div className="absolute top-0 left-0 w-full h-full z-0">
+          {/* Gradient circles */}
+          <div className="absolute w-64 h-64 bg-blue-100 rounded-full opacity-20 -top-32 -left-32"></div>
+          <div className="absolute w-96 h-96 bg-blue-200 rounded-full opacity-20 -bottom-48 -right-48"></div>
+        </div>
+
+        {/* Animated illustration or image */}
+        <div className="mt-16 flex justify-center">
+          <img
+            src="/fotu.png" // Replace with your illustration or image
+            alt="Fitness Illustration"
+            className="w-50% max-w-2xl"
+          />
+        </div>
+      </div>
+    </section>
+
+
 
 {/* Features Section */}
 <section className="py-20 bg-gray-50">

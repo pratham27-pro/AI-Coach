@@ -1,32 +1,42 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
 import axios from "axios";
 
 const Diet = () => {
+  const { currentUser } = useSelector((state) => state.user);
   const [mealPlan, setMealPlan] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const userId = 1; // Replace with actual user ID from authentication
-
-  const fetchMealPlan = async () => {
-    setLoading(true);
-    setError("");
-    try {
-      const response = await axios.post("http://localhost:5000/generate-meal-plan", {
-        userId,
-      });
-      setMealPlan(response.data);
-    } catch (error) {
-      console.error("Error fetching meal plan:", error);
-      setError("Failed to generate meal plan. Please try again.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
+    const fetchMealPlan = async () => {
+      if (!currentUser) return;
+
+      setLoading(true);
+      setError("");
+
+      try {
+        const response = await axios.post("http://localhost:5000/generate-meal-plan", {
+          dietType: currentUser.fitnessDetails.dietType,
+          fitnessGoal: currentUser.fitnessGoal,
+          medicalConditions: currentUser.medicalConditions.conditions,
+        });
+
+        setMealPlan(response.data);
+      } catch (error) {
+        console.error("Error fetching meal plan:", error);
+        setError("Failed to generate meal plan. Please try again.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
     fetchMealPlan();
-  }, []);
+  }, [currentUser]);
+
+  if (!currentUser) {
+    return <p>Please sign in to view your meal plan.</p>;
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6">

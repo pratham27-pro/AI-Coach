@@ -1,6 +1,7 @@
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
+import router from "./routes/user.route.js";
 
 dotenv.config();
 
@@ -10,10 +11,21 @@ app.use(cors({
     origin: [process.env.CORS_ORIGIN || "http://localhost:5173"],
     credentials: true
 }));
+app.use(express.json());
 
 
+app.get('/', (req, res) => {
+    res.status(200).json({ message: 'Backend is running!' });
+});
+app.get('/api/auth/signin', (req, res) => {
+    res.status(200).json({ message: 'Signin is running!' });
+});
+app.get('/api/auth/signup', (req, res) => {
+    res.status(200).json({ message: 'Signup is running!' });
+});
 
-
+app.use("/api", router);
+// app.use("/api/auth", authRouter);
 
 
 
