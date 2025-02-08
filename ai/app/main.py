@@ -2,9 +2,45 @@ from fastapi import FastAPI, HTTPException, Depends
 from sqlalchemy.orm import Session
 from . import models, schemas
 from .recommendation.engine import WorkoutRecommender
+from fastapi.middleware.cors import CORSMiddleware
+from dotenv import load_dotenv
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy.ext.declarative import declarative_base
+import os
+from dotenv import load_dotenv
+
+
+SQLALCHEMY_DATABASE_URL = os.getenv("DATABASE_URL")
+
+# Create the SQLAlchemy engine
+engine = create_engine(SQLALCHEMY_DATABASE_URL)
+
+# Create a sessionmaker factory
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
+# Base class for the models
+Base = declarative_base()
+
+def get_db():
+    """Create a new SQLAlchemy session."""
+    db = SessionLocal()
+    try:
+        yield db  # Yield the session so FastAPI can use it
+    finally:
+        db.close()  # Make sure to close the session when done
+
 
 app = FastAPI()
 recommender = WorkoutRecommender()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 @app.post("/api/generate-workout")
 async def generate_workout(
