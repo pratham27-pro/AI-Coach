@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import router from "./routes/user.route.js";
+import { generateWorkoutPlan, submitWorkoutFeedback } from "./routes/workout.route.js";
 
 dotenv.config();
 
@@ -27,6 +28,8 @@ app.get('/api/auth/signup', (req, res) => {
 app.use("/api", router);
 // app.use("/api/auth", authRouter);
 
+app.use("/api", generateWorkoutPlan);
+app.use("/api", submitWorkoutFeedback);
 
 
 
