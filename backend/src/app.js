@@ -17,10 +17,10 @@ app.use(express.json());
 app.get('/', (req, res) => {
     res.status(200).json({ message: 'Backend is running!' });
 });
-app.get('/api/auth/signin', (req, res) => {
+app.get('/api/login', (req, res) => {
     res.status(200).json({ message: 'Signin is running!' });
 });
-app.get('/api/auth/signup', (req, res) => {
+app.get('/api/signup', (req, res) => {
     res.status(200).json({ message: 'Signup is running!' });
 });
 

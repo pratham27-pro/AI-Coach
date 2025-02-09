@@ -1,9 +1,13 @@
 import { useState, useEffect } from "react";
 import { FiMenu, FiX } from "react-icons/fi";
+import { useDispatch, useSelector } from "react-redux"; // Import Redux hooks
+import { logout } from "../redux/user/userSlice.js";  // Import logout action
 
 const Nav = () => {
+  const dispatch = useDispatch(); // Hook to dispatch actions
+  const { currentUser } = useSelector((state) => state.user); // Access the currentUser from Redux store
+
   const [isOpen, setIsOpen] = useState(false);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
 
   useEffect(() => {
@@ -19,8 +23,13 @@ const Nav = () => {
   };
 
   const handleSignIn = () => {
-    // Add your sign-in logic here
-    setIsAuthenticated(true);
+    // Add your sign-in logic here (if necessary, or remove if already handled)
+    console.log("Sign In Button clicked");
+  };
+
+  const handleLogout = () => {
+    dispatch(logout()); // Dispatch the logout action when the user clicks logout
+    console.log("Logged out");
   };
 
   return (
@@ -50,13 +59,13 @@ const Nav = () => {
             >
               Plans
             </a>
-            
-              <a
-                href="#dashboard"
-                className="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-base font-medium transition-colors duration-200"
-              >
-                Dashboard
-              </a>
+
+            <a
+              href="#dashboard"
+              className="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-base font-medium transition-colors duration-200"
+            >
+              Dashboard
+            </a>
             <a
               href="#about"
               className="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-base font-medium transition-colors duration-200"
@@ -65,15 +74,25 @@ const Nav = () => {
             </a>
           </div>
 
-          {/* Sign In Button */}
+          {/* Authentication Button (Sign In / Logout) */}
           <div className="hidden md:flex items-center">
-            <button
-              onClick={handleSignIn}
-              className="bg-blue-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors duration-200"
-              aria-label="Sign in"
-            >
-              Sign In
-            </button>
+            {currentUser ? (
+              <button
+                onClick={handleLogout}
+                className="bg-red-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-colors duration-200"
+                aria-label="Logout"
+              >
+                Logout
+              </button>
+            ) : (
+              <button
+                onClick={handleSignIn}
+                className="bg-blue-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors duration-200"
+                aria-label="Sign in"
+              >
+                Sign In
+              </button>
+            )}
           </div>
 
           {/* Mobile menu button */}
@@ -106,7 +125,7 @@ const Nav = () => {
           >
             Plans
           </a>
-          {isAuthenticated && (
+          {currentUser && (
             <a
               href="#dashboard"
               className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-blue-600 hover:bg-gray-50 transition-colors duration-200"
@@ -126,6 +145,14 @@ const Nav = () => {
           >
             Sign In
           </button>
+          {currentUser && (
+            <button
+              onClick={handleLogout}
+              className="w-full text-left px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-red-600 hover:bg-gray-50 transition-colors duration-200"
+            >
+              Logout
+            </button>
+          )}
         </div>
       </div>
     </nav>
