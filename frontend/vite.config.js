@@ -17,7 +17,7 @@ export default defineConfig({
     proxy: {
       // Proxy API calls during development
       '/api': {
-        target: 'http://localhost:8000', // Local backend URL
+        target: 'http://localhost:5000', // Local backend URL
         changeOrigin: true,
         secure: false,
       },

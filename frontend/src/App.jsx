@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import './App.css';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
+import { FormDataProvider } from './Components/FormDataContext.jsx';
 import Home from './Components/Home.jsx';
 import Signup from './Components/Auth/Signup.jsx';
 import Medical from './Components/Auth/Medical.jsx';
@@ -42,9 +43,9 @@ function App() {
   ])
   
   return (
-    <>
+    <FormDataProvider>
       <RouterProvider router={router}/>
-    </>
+    </FormDataProvider>
   )
 }
 

@@ -93,6 +93,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useFormData } from "../FormDataContext.jsx";  // Import context
+import axios from "axios";
 import Signup from "./Signup.jsx";
 import Medical from "./Medical.jsx";
 import Fitness from "./Fitness.jsx";
@@ -122,7 +123,7 @@ const Profile = () => {
   const handleSubmit = async () => {
     // Here you can submit the form data to the backend as needed
     try {
-      const response = await axios.post("http://localhost:8000/signup", formData);
+      const response = await axios.post("http://localhost:5000/signup", formData);
       console.log("Signup successful:", response.data);
       alert("Signup successful! Redirecting...");
       navigate("/dashboard"); // Navigate to another page after successful submission

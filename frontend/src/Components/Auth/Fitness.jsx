@@ -1,20 +1,15 @@
-import React, { useState } from "react";
+import React from "react";
 
 const Fitness = ({
   formData, handleChange, nextStep, prevStep
 }) => {
-  const [fitnessLevel, setFitnessLevel] = useState("");
-  const [dietType, setDietType] = useState("");
-  const [fitnessGoal, setFitnessGoal] = useState("");
-  const [activityLevel, setActivityLevel] = useState("");
-
   const handleSubmit = (e) => {
     e.preventDefault();
     handleChange({
       fitnessDetails: {
-        fitnessLevel,
-        dietType,
-        activityLevel,
+        fitnessLevel: formData.fitnessLevel,
+        dietType: formData.dietType,
+        activityLevel: formData.activityLevel,
       },
     });
     nextStep(); // Move to the next step
@@ -42,8 +37,8 @@ const Fitness = ({
                     type="radio"
                     name="fitnessLevel"
                     value={level}
-                    checked={fitnessLevel === level}
-                    onChange={() => setFitnessLevel(level)}
+                    checked={formData.fitnessLevel === level}
+                    onChange={() => handleChange({ fitnessLevel: level })}
                     className="form-radio h-5 w-5 text-blue-600"
                   />
                   <span className="text-gray-700">{level}</span>
@@ -58,20 +53,14 @@ const Fitness = ({
               Preferred Diet Type
             </label>
             <select
-              value={dietType}
-              onChange={(e) => setDietType(e.target.value)}
+              value={formData.dietType || ""}
+              onChange={(e) => handleChange({ dietType: e.target.value })}
               className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
-              <option value="" disabled>
-                Select your diet type
-              </option>
-              {["Vegetarian", "Non-Vegetarian", "Vegan", "Keto/Paleo/Other"].map(
-                (diet) => (
-                  <option key={diet} value={diet}>
-                    {diet}
-                  </option>
-                )
-              )}
+              <option value="" disabled>Select your diet type</option>
+              {["Vegetarian", "Non-Vegetarian", "Vegan", "Keto/Paleo/Other"].map((diet) => (
+                <option key={diet} value={diet}>{diet}</option>
+              ))}
             </select>
           </div>
 
@@ -81,12 +70,7 @@ const Fitness = ({
               Primary Fitness Goal
             </label>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {[
-                "Weight Loss",
-                "Muscle Gain",
-                "General Fitness",
-                "Endurance Training",
-              ].map((goal) => (
+              {["Weight Loss", "Muscle Gain", "General Fitness", "Endurance Training"].map((goal) => (
                 <label
                   key={goal}
                   className="flex items-center space-x-3 bg-gray-100 p-4 rounded-lg hover:bg-gray-200 transition-colors"
@@ -95,8 +79,8 @@ const Fitness = ({
                     type="radio"
                     name="fitnessGoal"
                     value={goal}
-                    checked={fitnessGoal === goal}
-                    onChange={() => setFitnessGoal(goal)}
+                    checked={formData.fitnessGoal === goal}
+                    onChange={() => handleChange({ fitnessGoal: goal })}
                     className="form-radio h-5 w-5 text-blue-600"
                   />
                   <span className="text-gray-700">{goal}</span>
@@ -111,22 +95,13 @@ const Fitness = ({
               Daily Activity Level
             </label>
             <select
-              value={activityLevel}
-              onChange={(e) => setActivityLevel(e.target.value)}
+              value={formData.activityLevel || ""}
+              onChange={(e) => handleChange({ activityLevel: e.target.value })}
               className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
-              <option value="" disabled>
-                Select your activity level
-              </option>
-              {[
-                "Sedentary (Little to no exercise)",
-                "Lightly Active (1-3 workouts per week)",
-                "Moderately Active (4-5 workouts per week)",
-                "Very Active (Daily intense workouts)",
-              ].map((activity) => (
-                <option key={activity} value={activity}>
-                  {activity}
-                </option>
+              <option value="" disabled>Select your activity level</option>
+              {["Sedentary (Little to no exercise)", "Lightly Active (1-3 workouts per week)", "Moderately Active (4-5 workouts per week)", "Very Active (Daily intense workouts)"].map((activity) => (
+                <option key={activity} value={activity}>{activity}</option>
               ))}
             </select>
           </div>

@@ -1,10 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
-const Allergies = ({
-  formData, handleChange, prevStep, handleSubmit
-}) => {
-  const [selectedAllergies, setSelectedAllergies] = useState([]);
-  const [otherAllergy, setOtherAllergy] = useState("");
+const Allergies = ({ formData, handleChange, prevStep, handleSubmit }) => {
+  const [selectedAllergies, setSelectedAllergies] = useState(Array.isArray(formData.allergies) ? formData.allergies : []);
+  const [otherAllergy, setOtherAllergy] = useState(formData.otherAllergy || "");
 
   const allergies = [
     "Peanuts",
@@ -19,16 +17,23 @@ const Allergies = ({
     "None of These"
   ];
 
+  useEffect(() => {
+    // Ensure selectedAllergies is always an array
+    if (!Array.isArray(selectedAllergies)) {
+      setSelectedAllergies([]);
+    }
+  }, [selectedAllergies]);
+
   const handleCheckboxChange = (allergy) => {
     if (allergy === "None of These") {
       setSelectedAllergies(["None of These"]);
-      setOtherAllergy("");
+      setOtherAllergy(""); // Reset "Other Allergy" input when "None of These" is selected
     } else {
       setSelectedAllergies((prev) => {
         const newSelection = prev.includes(allergy)
           ? prev.filter((item) => item !== allergy)
           : [...prev, allergy];
-        return newSelection.filter((item) => item !== "None of These");
+        return Array.isArray(newSelection) ? newSelection.filter((item) => item !== "None of These") : [];
       });
     }
   };
@@ -47,7 +52,7 @@ const Allergies = ({
   return (
     <div className="p-6 sm:p-8 max-w-lg mx-auto bg-white shadow-xl rounded-2xl text-center transition-all duration-300 ease-in-out transform hover:scale-105">
       <h2 className="text-3xl font-bold mb-6 text-gray-800">Common Allergies</h2>
-      <form>
+      <form onSubmit={handleFinalSubmit}>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-left">
           {allergies.map((allergy) => (
             <label key={allergy} className="flex items-center space-x-2 bg-gray-100 rounded-lg p-2 hover:bg-gray-200 transition-colors duration-200">

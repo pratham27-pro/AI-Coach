@@ -1,0 +1,8 @@
+Instructions to set up the server (Windows)
+
+Keep entering.
+Pick a name for the db
+Enter the password you created.
+
+To run the project
+uvicorn app.main:app --reload --port 8000

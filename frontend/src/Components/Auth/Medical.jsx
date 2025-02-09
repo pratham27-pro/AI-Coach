@@ -1,10 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
-const Medical = ({
-  formData, handleChange, nextStep, prevStep
-}) => {
-  const [selectedConditions, setSelectedConditions] = useState(formData.medicalConditions.conditions);
-  const [otherDisease, setOtherDisease] = useState(formData.medicalConditions.otherDisease);
+const Medical = ({ formData, handleChange, nextStep, prevStep }) => {
+  // Ensure initial state values are set correctly
+  const [selectedConditions, setSelectedConditions] = useState(formData.medicalConditions?.conditions || []);
+  const [otherDisease, setOtherDisease] = useState(formData.medicalConditions?.otherDisease || "");
 
   const conditions = [
     "Diabetes",
@@ -17,10 +16,17 @@ const Medical = ({
     "None of These"
   ];
 
+  useEffect(() => {
+    // Ensure selectedConditions is always an array
+    if (!Array.isArray(selectedConditions)) {
+      setSelectedConditions([]);
+    }
+  }, [selectedConditions]);
+
   const handleCheckboxChange = (condition) => {
     if (condition === "None of These") {
       setSelectedConditions(["None of These"]);
-      setOtherDisease("");
+      setOtherDisease(""); // Reset other disease when "None of These" is selected
     } else {
       setSelectedConditions((prev) => {
         const newSelection = prev.includes(condition)
@@ -45,7 +51,7 @@ const Medical = ({
   return (
     <div className="p-6 sm:p-8 max-w-lg mx-auto bg-white shadow-xl rounded-2xl text-center transition-all duration-300 ease-in-out transform hover:scale-105">
       <h2 className="text-3xl font-bold mb-6 text-gray-800">Medical History</h2>
-      <form>
+      <form onSubmit={handleSubmit}>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-left">
           {conditions.map((condition) => (
             <label key={condition} className="flex items-center space-x-2 bg-gray-100 rounded-lg p-2 hover:bg-gray-200 transition-colors duration-200">
@@ -68,7 +74,8 @@ const Medical = ({
             onChange={(e) => setOtherDisease(e.target.value)}
           />
         )}
-        <button
+        <div className="mt-6 flex justify-between">
+          <button
             type="button"
             onClick={prevStep}
             className="bg-gray-500 text-white py-2 px-4 rounded-lg hover:bg-gray-600 transition-colors"
@@ -80,7 +87,8 @@ const Medical = ({
             className="bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition-colors"
           >
             Next
-        </button>
+          </button>
+        </div>
       </form>
     </div>
   );
