@@ -8,10 +8,15 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 import os
-from dotenv import load_dotenv
 
+load_dotenv()
 
-SQLALCHEMY_DATABASE_URL = os.getenv("DATABASE_URL")
+SQLALCHEMY_DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://postgres:happy@localhost:5432/postgres")
+
+print(SQLALCHEMY_DATABASE_URL)  # Add this line to debug the URL
+
+if not SQLALCHEMY_DATABASE_URL:
+    raise ValueError("DATABASE_URL is not set in the .env file")
 
 # Create the SQLAlchemy engine
 engine = create_engine(SQLALCHEMY_DATABASE_URL)
@@ -33,6 +38,10 @@ def get_db():
 
 app = FastAPI()
 recommender = WorkoutRecommender()
+
+@app.get("/")
+def read_root():
+    return {"message": "AI coach AI is working! Yoo-hoo!!"}
 
 app.add_middleware(
     CORSMiddleware,
