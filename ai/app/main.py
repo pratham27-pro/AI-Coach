@@ -47,7 +47,7 @@ def read_root():
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://localhost:5000"],
+    allow_origins=["http://localhost:5173", "http://localhost:5000", "*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -76,6 +76,23 @@ async def sync_user(
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=400, detail=str(e))
+    
+def transform_fitness_level(level: str) -> int:
+    levels = {
+        'Beginner': 1,
+        'Intermediate': 2,
+        'Advanced': 3
+    }
+    return levels.get(level, 1)
+
+def transform_activity_level(level: str) -> str:
+    levels = {
+        'Sedentary (Little to no exercise)': 'beginner',
+        'Lightly Active (1-3 workouts per week)': 'intermediate',
+        'Moderately Active (4-5 workouts per week)': 'advanced',
+        'Very Active (Daily intense workouts)': 'expert'
+    }
+    return levels.get(level, 'intermediate')
 
 @app.post("/api/generate-workout")
 async def generate_workout(
@@ -85,6 +102,8 @@ async def generate_workout(
     try:
         print(f"Received request with fitness goal: {request.fitnessGoal}")
         
+        backend_request = request.to_backend_schema()
+
         # Initialize the recommender
         recommender = WorkoutRecommender()
         
@@ -92,21 +111,20 @@ async def generate_workout(
         user_data = {
             'fitness_goal': request.fitnessGoal,
             'cycle_phase': request.menstrualCyclePhase,
-            'fitness_level': getattr(request, 'fitness_level', 3),  # Use user data if available, default to 3
-            'available_equipment': getattr(request, 'available_equipment', []),  # Use user data if available
+            'fitness_level': transform_fitness_level(request.fitnessLevel),
+            'available_equipment': [],
             'user_metrics': {
-                'fitness_level': getattr(request, 'fitness_level', 3),
-                'experience_level': getattr(request, 'activity_level', 'intermediate'),
-                'weight': getattr(request, 'weight', 70),
-                'height': getattr(request, 'height', 170),
+                'fitness_level': transform_fitness_level(request.fitnessLevel),
+                'experience_level': transform_activity_level(request.activityLevel),
+                'weight': float(request.weight) if request.weight else 70,
+                'height': float(request.height) if request.height else 170,
             }
         }
 
-        if hasattr(request, 'medical_conditions') and request.medical_conditions:
-            user_data['medical_conditions'] = request.medical_conditions
+        if request.medicalConditions:
+            user_data['medical_conditions'] = request.medicalConditions
         
-        # Add allergies if available
-        if hasattr(request, 'allergies') and request.allergies:
+        if request.allergies:
             user_data['allergies'] = request.allergies
         
         # Generate workout using the recommender

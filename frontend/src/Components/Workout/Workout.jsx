@@ -1,87 +1,134 @@
 import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
-import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { useFormData } from "../FormDataContext.jsx";
+import { generateWorkoutPlan } from "./API.js"; // Import the API function
+import { store } from "../../redux/store.js";
 
 const Workout = () => {
-  const { currentUser } = useSelector((state) => state.user);
+  const { currentUser, loading: authLoading } = useSelector((state) => state.user);
   const [workoutPlan, setWorkoutPlan] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const navigate = useNavigate();
+  const { formData } = useFormData();
+  const [profileComplete, setProfileComplete] = useState(false);
 
   useEffect(() => {
-    if (currentUser) {
-      const requiredFields = ['fitnessGoal', 'fitnessLevel', 'dietType', 'activityLevel'];
-      const missingFields = requiredFields.filter(field => !formData[field]);
-      
-      if (missingFields.length > 0) {
-        setProfileComplete(false);
-        setError(`Please complete your profile by providing: ${missingFields.join(', ')}`);
-      } else {
-        setProfileComplete(true);
-        setError("");
-      }
-    }
-  }, [currentUser, formData]);
+    const state = store.getState();
+    console.log('Current Redux State:', state);
+    console.log('Current User:', state.user.currentUser);
+  }, []);
 
+  // Check if authentication is complete and profile data exists
+  useEffect(() => {
+    console.log("Auth state:", { currentUser, authLoading });
+    
+    if (authLoading) {
+      console.log("Authentication is still loading...");
+      return;
+    }
+    
+    if (!currentUser || (!currentUser._id && (!currentUser.user || !currentUser.user._id))) {
+      console.log("No authenticated user found");
+      setError("Please sign in to view your workout plan");
+      return;
+    }
+    
+    if (!formData) {
+      console.log("Form data is not available");
+      setError("Profile data is missing");
+      return;
+    }
+    
+    // Check if required fields exist in the nested structure
+    const isComplete = 
+      formData.fitnessGoal && 
+      formData.fitnessDetails?.fitnessLevel &&
+      formData.fitnessDetails?.dietType &&
+      formData.fitnessDetails?.activityLevel;
+
+    setProfileComplete(isComplete);
+
+    if (!isComplete) {
+      const missingFields = [];
+      if (!formData.fitnessGoal) missingFields.push('Fitness Goal');
+      if (!formData.fitnessDetails?.fitnessLevel) missingFields.push('Fitness Level');
+      if (!formData.fitnessDetails?.dietType) missingFields.push('Diet Type');
+      if (!formData.fitnessDetails?.activityLevel) missingFields.push('Activity Level');
+
+      setError(`Please complete your profile by providing: ${missingFields.join(', ')}`);
+      console.log(`Profile incomplete, missing: ${missingFields.join(', ')}`);
+    } else {
+      setError("");
+      console.log("Profile is complete, ready to fetch workout plan");
+    }
+  }, [currentUser, authLoading, formData]);
+
+  // Fetch workout plan when profile is complete
   useEffect(() => {
     const fetchWorkoutPlan = async () => {
-      if (!currentUser) return;
+      if (authLoading) {
+        return;
+      }
+      
+      if (!currentUser || !currentUser._id) {
+        return;
+      }
+      
+      if (!formData) {
+        return;
+      }
+      
+      if (!profileComplete) {
+        console.log('Profile incomplete, skipping workout plan fetch');
+        return;
+      }
 
       setLoading(true);
       setError("");
 
       try {
-        // Create a comprehensive request object that matches the schema expected by the backend
-        const requestData = {
-          userId: currentUser._id || formData._id,
+        console.log('Current user:', currentUser);
+        console.log('Form data:', formData);
+        
+        // Create a merged user object with all necessary data
+        const userWithFormData = {
+          ...currentUser,
+          _id: currentUser._id || currentUser.user._id, // Handle both structures
           fitnessGoal: formData.fitnessGoal,
-          
-          // Physical metrics from form data
-          height: parseFloat(formData.height),
-          weight: parseFloat(formData.weight),
-          
-          // Fitness details from form data
-          fitnessLevel: formData.fitnessLevel,
-          dietType: formData.dietType,
-          activityLevel: formData.activityLevel,
-          
-          // Medical conditions from form data
-          medicalConditions: formData.medicalConditions?.conditions || [],
-          
-          // Allergies info from form data
-          allergies: formData.allergies?.allergies || [],
-          
-          // Menstrual cycle info (if applicable)
-          menstrualCyclePhase: formData.gender === 'Female' ? 
-                               determineCurrentPhase(formData.lastPeriodDate, formData.cycleLength) : 
-                               null
+          height: formData.height || "170",
+          weight: formData.weight || "70",
+          fitnessDetails: formData.fitnessDetails || {},
+          medicalConditions: formData.medicalConditions || {},
+          allergies: formData.allergies || {},
+          gender: formData.gender || 'Prefer not to say',
+          lastPeriodDate: formData.lastPeriodDate || null,
+          cycleLength: formData.cycleLength || 28,
         };
 
-        console.log('Sending request with data:', requestData); // Debug log
+        if (userWithFormData.gender === 'Female' && formData.lastPeriodDate) {
+          userWithFormData.menstrualCyclePhase = determineCurrentPhase(
+            formData.lastPeriodDate, 
+            formData.cycleLength || 28
+          );
+        }
 
-        const response = await axios.post(
-          "http://127.0.0.1:8000/api/generate-workout",
-          requestData,
-          {
-            headers: {
-              'Content-Type': 'application/json',
-            }
-          }
-        );
+        console.log('Merged user data:', userWithFormData);
+        console.log('User ID check:', userWithFormData._id);
 
-        console.log('Received response:', response.data); // Debug log
+        // Use the API function instead of direct axios call
+        const response = await generateWorkoutPlan(userWithFormData);
 
-        if (response.data.workoutPlan) {
-          setWorkoutPlan(response.data.workoutPlan);
+        if (response.workoutPlan) {
+          setWorkoutPlan(response.workoutPlan);
         } else {
           setError("Received invalid workout plan format");
         }
       } catch (error) {
-        console.error("Error fetching workout plan:", error.response || error);
+        console.error("Error fetching workout plan:", error);
         setError(
-          error.response?.data?.detail || 
+          error.message || 
           "Failed to generate workout plan. Please try again."
         );
       } finally {
@@ -90,7 +137,7 @@ const Workout = () => {
     };
 
     fetchWorkoutPlan();
-  }, [currentUser]);
+  }, [currentUser, formData, profileComplete, authLoading]);
 
   const determineCurrentPhase = (lastPeriodDate, cycleLength = 28) => {
     if (!lastPeriodDate) return null;
@@ -111,14 +158,36 @@ const Workout = () => {
     navigate(`/posture-detection/${exerciseName}`);
   };
 
-  if (!currentUser) {
+  // Loading state during auth check
+  if (authLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <p className="text-lg text-gray-600">Please sign in to view your workout plan.</p>
+        <p className="text-lg text-gray-600">Loading your profile...</p>
       </div>
     );
   }
 
+  // Check for authentication
+  if (!currentUser || !currentUser._id) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-2xl">
+          <h1 className="text-2xl font-bold text-gray-900 mb-6">
+            Authentication Required
+          </h1>
+          <p className="text-gray-600 mb-4">Please sign in to view your workout plan.</p>
+          <button 
+            className="bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition-colors"
+            onClick={() => navigate('/login')}
+          >
+            Sign In
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Check for incomplete profile
   if (!profileComplete) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6">

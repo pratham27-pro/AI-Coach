@@ -53,7 +53,7 @@ const userSchema = new mongoose.Schema({
         },
       activityLevel: { 
         type: String, 
-        enum: ["Sedentary", "Lightly Active", "Moderately Active", "Very Active"], 
+        enum: ["Sedentary (Little to no exercise)", "Lightly Active (1-3 workouts per week)", "Moderately Active (4-5 workouts per week)", "Very Active (Daily intense workouts)"], 
         required: true 
         },
     },

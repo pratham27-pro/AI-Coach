@@ -1,6 +1,7 @@
 from pydantic import BaseModel, EmailStr
 from typing import List, Optional, Dict, Any
 from datetime import datetime
+from . import main
 
 class UserSync(BaseModel):
     id: int
@@ -35,12 +36,12 @@ class WorkoutRequestFromFrontend(BaseModel):
             cycle_phase=self.menstrualCyclePhase,
             energy_level=5,  # Default energy level
             preferred_duration=None,  # Default to None
-            fitness_level=self.fitness_level,
-            activity_level=self.activity_level,
-            diet_type=self.diet_type,
-            weight=self.weight,
-            height=self.height,
-            medical_conditions=self.medical_conditions,
+            fitness_level=main.transform_fitness_level(self.fitnessLevel),
+            activity_level=main.transform_activity_level(self.activityLevel),
+            diet_type=self.dietType,
+            weight=float(self.weight) if self.weight else None,
+            height=float(self.height) if self.height else None,
+            medical_conditions=self.medicalConditions,
             allergies=self.allergies
         )
 

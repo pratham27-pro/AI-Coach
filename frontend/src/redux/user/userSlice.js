@@ -15,7 +15,13 @@ const userSlice = createSlice({
             state.loading = true;
         },
         signinSuccess: (state, action) => {
-            state.currentUser = action.payload;
+            // If the payload has a nested user object, flatten it
+            state.currentUser = action.payload.user ? {
+              ...action.payload.user,
+              fitnessDetails: action.payload.fitnessDetails,
+              medicalConditions: action.payload.medicalConditions,
+              allergies: action.payload.allergies
+            } : action.payload;
             state.loading = false;
             state.error = false;
         },

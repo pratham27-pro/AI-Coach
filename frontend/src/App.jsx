@@ -54,9 +54,10 @@ function App() {
   
   return (
     <FormDataProvider>
-      <RouterProvider router={router}/>
+        <RouterProvider router={router}/>
     </FormDataProvider>
   )
 }
 
-export default App
+export default App;
+

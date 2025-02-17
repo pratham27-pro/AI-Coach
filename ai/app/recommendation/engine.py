@@ -474,14 +474,14 @@ class WorkoutRecommender:
                 'recovery': 'Standard recovery protocols work well here. Focus on good sleep habits and adequate hydration.'
             },
             'ovulation': {
-                'workout': 'Energy levels are typically highest now. Take advantage with more challenging workouts, HIIT, and heavier weights if you're feeling good.',
+                'workout': 'Energy levels are typically highest now. Take advantage with more challenging workouts, HIIT, and heavier weights if you are feeling good.',
                 'nutrition': 'Support higher intensity workouts with adequate carbohydrates. Stay well-hydrated, especially during intense sessions.',
                 'recovery': 'With increased workout intensity, pay attention to recovery. Consider adding foam rolling and targeted stretching.'
             },
             'luteal': {
                 'workout': 'As progesterone rises, you may notice decreased energy. Consider reducing intensity, especially in the later part of this phase. Focus on steady-state cardio and lighter weights with higher reps.',
                 'nutrition': 'You may experience increased appetite. Focus on fiber-rich foods and complex carbs to help manage cravings. Magnesium-rich foods like nuts and dark chocolate may help with symptoms.',
-                'recovery': 'You might need extra recovery time. Listen to your body and don't push through fatigue. Restorative yoga and extra sleep can be beneficial.'
+                'recovery': 'You might need extra recovery time. Listen to your body and do not push through fatigue. Restorative yoga and extra sleep can be beneficial.'
             }
         }
         

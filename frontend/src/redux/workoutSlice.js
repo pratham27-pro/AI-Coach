@@ -10,19 +10,19 @@ export const fetchWorkoutPlan = createAsyncThunk(
     if (!user || !user._id) throw new Error("User not logged in");
 
     const requestData = {
-      user_id: user._id,  // MongoDB ID
-      email: user.email,
-      fitness_goal: user.fitnessGoal,
-      fitness_level: user.fitnessDetails.fitnessLevel,
-      weight: user.weight,
-      height: user.height,
-      activity_level: user.fitnessDetails.activityLevel,
-      diet_type: user.fitnessDetails.dietType,
-      medical_conditions: user.medicalConditions.conditions,
-      allergies: user.allergies.allergies,
+      userId: user._id,
+      fitnessGoal: user.fitnessGoal,
+      fitnessLevel: user.fitnessDetails?.fitnessLevel,
+      dietType: user.fitnessDetails?.dietType,
+      activityLevel: user.fitnessDetails?.activityLevel,
+      medicalConditions: user.medicalConditions?.conditions || [],
+      allergies: user.allergies?.allergies || [],
+      height: parseFloat(user.height),
+      weight: parseFloat(user.weight),
+      menstrualCyclePhase: user.gender === 'Female' ? user.menstrualCyclePhase : null
     };
     
-    const response = await generateWorkoutPlan(userData);
+    const response = await generateWorkoutPlan(requestData);
     return response.data;
   }
 );
@@ -50,3 +50,5 @@ export const workoutSlice = createSlice({
       });
   },
 });
+
+export default workoutSlice.reducer;

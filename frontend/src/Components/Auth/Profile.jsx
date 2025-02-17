@@ -36,26 +36,19 @@ const Profile = () => {
   // Handle final submission
   const handleSubmit = async () => {
     dispatch(signinStart()); 
-    // Here you can submit the form data to the backend as needed
     try {
-      const completeFormData = {
-        ...formData,
-        
-        menstrualCyclePhase: formData.gender === 'Female' ? formData.menstrualCyclePhase : null,
-        lastPeriodDate: formData.gender === 'Female' ? formData.lastPeriodDate : null,
-        cycleLength: formData.gender === 'Female' ? formData.cycleLength : null,
-
-      };
-      
       const response = await axios.post("http://localhost:5000/api/signup", formData);
-      console.log("Signup successful:", response.data);
-      dispatch(signinSuccess(response.data));
-      alert("Signup successful! Redirecting...");
-      navigate("/dashboard"); // Navigate to another page after successful submission
+      // Merge form data with user data in Redux
+      const userData = {
+        ...response.data.user,
+        fitnessDetails: formData.fitnessDetails,
+        medicalConditions: formData.medicalConditions,
+        allergies: formData.allergies
+      };
+      dispatch(signinSuccess(userData));
+      navigate("/workout");
     } catch (error) {
-      console.error("Error during signup:", error);
       dispatch(signinFailure(error.message));
-      alert("Signup failed. Please try again.");
     }
   };
 

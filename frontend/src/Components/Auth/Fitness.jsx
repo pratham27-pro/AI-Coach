@@ -6,11 +6,14 @@ const Fitness = ({
   const handleSubmit = (e) => {
     e.preventDefault();
     handleChange({
+
+      fitnessGoal: formData.fitnessGoal,
+
       fitnessDetails: {
-        fitnessLevel: formData.fitnessLevel,
-        dietType: formData.dietType,
-        activityLevel: formData.activityLevel,
-      },
+      fitnessLevel: formData.fitnessDetails?.fitnessLevel || formData.fitnessLevel,
+      dietType: formData.fitnessDetails?.dietType || formData.dietType,
+      activityLevel: formData.fitnessDetails?.activityLevel || formData.activityLevel,
+    },
       menstrualTracking: formData.menstrualTracking,
       cycleLength: formData.cycleLength,
       lastPeriodDate: formData.lastPeriodDate,
@@ -40,8 +43,13 @@ const Fitness = ({
                     type="radio"
                     name="fitnessLevel"
                     value={level}
-                    checked={formData.fitnessLevel === level}
-                    onChange={() => handleChange({ fitnessLevel: level })}
+                    checked={formData.fitnessDetails?.fitnessLevel === level || formData.fitnessLevel === level}
+                    onChange={() => handleChange({ 
+                      fitnessDetails: {
+                        ...formData.fitnessDetails,
+                        fitnessLevel: level 
+                      }
+                    })}
                     className="form-radio h-5 w-5 text-blue-600"
                   />
                   <span className="text-gray-700">{level}</span>
@@ -56,8 +64,13 @@ const Fitness = ({
               Preferred Diet Type
             </label>
             <select
-              value={formData.dietType || ""}
-              onChange={(e) => handleChange({ dietType: e.target.value })}
+              value={formData.fitnessDetails?.dietType || formData.dietType || ""}
+              onChange={(e) => handleChange({ 
+                fitnessDetails: {
+                  ...formData.fitnessDetails,
+                  dietType: e.target.value 
+                }
+              })}
               className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="" disabled>Select your diet type</option>
@@ -81,8 +94,8 @@ const Fitness = ({
                   <input
                     type="radio"
                     name="fitnessGoal"
-                    value={goal}
                     checked={formData.fitnessGoal === goal}
+                    value={goal}
                     onChange={() => handleChange({ fitnessGoal: goal })}
                     className="form-radio h-5 w-5 text-blue-600"
                   />
@@ -97,8 +110,13 @@ const Fitness = ({
               Daily Activity Level
             </label>
             <select
-              value={formData.activityLevel || ""}
-              onChange={(e) => handleChange({ activityLevel: e.target.value })}
+              value={formData.fitnessDetails?.activityLevel || formData.activityLevel || ""}
+              onChange={(e) => handleChange({ 
+                fitnessDetails: {
+                  ...formData.fitnessDetails,
+                  activityLevel: e.target.value 
+                }
+              })}
               className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="" disabled>Select your activity level</option>
