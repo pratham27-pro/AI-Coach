@@ -1,6 +1,6 @@
 import React from "react";
 import { useDispatch } from "react-redux";
-import { signinSuccess } from "../../redux/user/userSlice"; 
+import { signinSuccess } from "../../redux/user/userSlice.js"; 
 import { Link } from "react-router-dom";
 
 const Signup = ({ formData, handleChange, nextStep }) => {
@@ -18,6 +18,21 @@ const Signup = ({ formData, handleChange, nextStep }) => {
       gender: formData.gender,
       fitnessGoal: formData.fitnessGoal,
     };
+
+    if (formData.gender === 'Female') {
+      handleChange({
+        menstrualCyclePhase: 'unknown', // Default to unknown until specified
+        lastPeriodDate: null,
+        cycleLength: 28, // Default cycle length
+      });
+    } else {
+      // Clear any menstrual cycle data for non-female users
+      handleChange({
+        menstrualCyclePhase: null,
+        lastPeriodDate: null,
+        cycleLength: null,
+      });
+    }
 
     // Dispatching signinSuccess to store user data in Redux
     dispatch(signinSuccess(userData));

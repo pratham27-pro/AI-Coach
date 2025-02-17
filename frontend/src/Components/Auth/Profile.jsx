@@ -38,6 +38,15 @@ const Profile = () => {
     dispatch(signinStart()); 
     // Here you can submit the form data to the backend as needed
     try {
+      const completeFormData = {
+        ...formData,
+        
+        menstrualCyclePhase: formData.gender === 'Female' ? formData.menstrualCyclePhase : null,
+        lastPeriodDate: formData.gender === 'Female' ? formData.lastPeriodDate : null,
+        cycleLength: formData.gender === 'Female' ? formData.cycleLength : null,
+
+      };
+      
       const response = await axios.post("http://localhost:5000/api/signup", formData);
       console.log("Signup successful:", response.data);
       dispatch(signinSuccess(response.data));

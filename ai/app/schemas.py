@@ -1,5 +1,5 @@
 from pydantic import BaseModel, EmailStr
-from typing import List, Optional, Dict
+from typing import List, Optional, Dict, Any
 from datetime import datetime
 
 class UserSync(BaseModel):
@@ -9,6 +9,40 @@ class UserSync(BaseModel):
     fitness_goal: str
     fitness_level: int
     available_equipment: List[str]
+
+class WorkoutRequestFromFrontend(BaseModel):
+    userId: Optional[str] = None
+    fitnessGoal: str
+    menstrualCyclePhase: Optional[str] = None
+    height: Optional[float] = None
+    weight: Optional[float] = None
+    age: Optional[int] = None
+    medicalConditions: Optional[List[str]] = None
+    lastPeriodDate: Optional[str] = None
+    cycleLength: Optional[int] = None
+    previousWorkouts: Optional[List[Dict[str, Any]]] = None
+    fitnessProgress: Optional[Dict[str, Any]] = None
+    fitnessLevel: Optional[str] = None
+    dietType: Optional[str] = None
+    activityLevel: Optional[str] = None
+    allergies: Optional[List[str]] = None
+    
+    # Convert to snake_case for backend processing
+    def to_backend_schema(self):
+        return WorkoutRequest(
+            user_id=1,  # Temporary default until user system is integrated
+            fitness_goal=self.fitnessGoal,
+            cycle_phase=self.menstrualCyclePhase,
+            energy_level=5,  # Default energy level
+            preferred_duration=None,  # Default to None
+            fitness_level=self.fitness_level,
+            activity_level=self.activity_level,
+            diet_type=self.diet_type,
+            weight=self.weight,
+            height=self.height,
+            medical_conditions=self.medical_conditions,
+            allergies=self.allergies
+        )
 
 class UserBase(BaseModel):
     username: str
@@ -35,6 +69,13 @@ class WorkoutRequest(BaseModel):
     cycle_phase: Optional[str]
     energy_level: Optional[int] = 5
     preferred_duration: Optional[int]
+    fitness_level: Optional[int] = None
+    activity_level: Optional[str] = None
+    diet_type: Optional[str] = None
+    weight: Optional[float] = None
+    height: Optional[float] = None
+    medical_conditions: Optional[List[str]] = None
+    allergies: Optional[List[str]] = None
 
 class ExerciseResponse(BaseModel):
     id: int

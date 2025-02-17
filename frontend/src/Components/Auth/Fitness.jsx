@@ -11,6 +11,9 @@ const Fitness = ({
         dietType: formData.dietType,
         activityLevel: formData.activityLevel,
       },
+      menstrualTracking: formData.menstrualTracking,
+      cycleLength: formData.cycleLength,
+      lastPeriodDate: formData.lastPeriodDate,
     });
     nextStep(); // Move to the next step
   };
@@ -89,7 +92,6 @@ const Fitness = ({
             </div>
           </div>
 
-          {/* Daily Activity Level */}
           <div className="mb-6">
             <label className="block text-gray-700 text-sm font-bold mb-2">
               Daily Activity Level
@@ -105,6 +107,66 @@ const Fitness = ({
               ))}
             </select>
           </div>
+
+          {/* Menstrual Tracking */}
+          {formData.gender === "Female" && (
+            <div className="mb-6">
+              <label className="block text-gray-700 text-sm font-bold mb-2">
+                Would you like to track your menstrual cycle for personalized workouts?
+              </label>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {["Yes", "No"].map((option) => (
+                  <label
+                    key={option}
+                    className="flex items-center space-x-3 bg-gray-100 p-4 rounded-lg hover:bg-gray-200 transition-colors"
+                  >
+                    <input
+                      type="radio"
+                      name="menstrualTracking"
+                      value={option}
+                      checked={formData.menstrualTracking === option}
+                      onChange={() => handleChange({ menstrualTracking: option })}
+                      className="form-radio h-5 w-5 text-blue-600"
+                    />
+                    <span className="text-gray-700">{option}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Additional Menstrual Tracking Fields (Conditional) */}
+          {formData.gender === "Female" && formData.menstrualTracking === "Yes" && (
+            <>
+              <div className="mb-6">
+                <label className="block text-gray-700 text-sm font-bold mb-2">
+                  Average Cycle Length (days)
+                </label>
+                <select
+                  value={formData.cycleLength || ""}
+                  onChange={(e) => handleChange({ cycleLength: e.target.value })}
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="" disabled>Select cycle length</option>
+                  {[...Array(15)].map((_, i) => (
+                    <option key={i + 21} value={i + 21}>{i + 21} days</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="mb-6">
+                <label className="block text-gray-700 text-sm font-bold mb-2">
+                  First Day of Last Period
+                </label>
+                <input
+                  type="date"
+                  value={formData.lastPeriodDate || ""}
+                  onChange={(e) => handleChange({ lastPeriodDate: e.target.value })}
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+            </>
+          )}
 
           {/* Submit Button */}
           <div className="mt-6 flex justify-between">

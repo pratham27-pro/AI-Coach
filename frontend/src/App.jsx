@@ -9,6 +9,8 @@ import Allergies from './Components/Auth/Allergies.jsx';
 import Fitness from './Components/Auth/Fitness.jsx';
 import Diet from './Components/Diet.jsx';
 import Profile from './Components/Auth/Profile.jsx';
+import Workout from './Components/Workout/Workout.jsx';
+import Posture from './Components/Workout/Posture.jsx';
 
 function App() {
   const router = createBrowserRouter([
@@ -39,6 +41,14 @@ function App() {
     {
       path: '/profile',
       element: <Profile/>
+    },
+    {
+      path: '/workout',
+      element: <Workout/>
+    }, 
+    {
+      path: "/posture-detection/:id",
+      element: <Posture/>
     }
   ])
   

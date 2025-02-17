@@ -3,7 +3,7 @@ import { Camera } from 'lucide-react';
 import * as tf from '@tensorflow/tfjs';
 import * as poseDetection from '@tensorflow-models/pose-detection';
 
-const PostureDetection = ({ exercise, onComplete }) => {
+const Posture = ({ exercise, onComplete }) => {
   const videoRef = useRef(null);
   const [detector, setDetector] = useState(null);
   const [feedback, setFeedback] = useState(null);
@@ -62,3 +62,5 @@ const PostureDetection = ({ exercise, onComplete }) => {
     </div>
   );
 };
+
+export default Posture;
