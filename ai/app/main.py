@@ -51,6 +51,30 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+@app.post("/api/sync-user")
+async def sync_user(
+    user_data: schemas.UserSync,
+    db: Session = Depends(get_db)
+):
+    # Check if user already exists
+    user = db.query(models.User).filter(models.User.id == user_data.id).first()
+    
+    if user:
+        # Update existing user
+        for key, value in user_data.dict().items():
+            setattr(user, key, value)
+    else:
+        # Create new user
+        user = models.User(**user_data.dict())
+        db.add(user)
+    
+    try:
+        db.commit()
+        return {"status": "success", "user_id": user.id}
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=400, detail=str(e))
+
 @app.post("/api/generate-workout")
 async def generate_workout(
     request: schemas.WorkoutRequest,

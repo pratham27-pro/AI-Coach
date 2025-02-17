@@ -2,6 +2,14 @@ from pydantic import BaseModel, EmailStr
 from typing import List, Optional, Dict
 from datetime import datetime
 
+class UserSync(BaseModel):
+    id: int
+    username: str
+    email: str
+    fitness_goal: str
+    fitness_level: int
+    available_equipment: List[str]
+
 class UserBase(BaseModel):
     username: str
     email: EmailStr

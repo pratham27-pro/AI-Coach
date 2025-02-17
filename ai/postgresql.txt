@@ -7,3 +7,6 @@ Enter the password you created.
 To run the project
 uvicorn app.main:app --reload --port 8000
 uvicorn main:app --port 8000
+
+To activate the env
+source venv/Scripts/activate
