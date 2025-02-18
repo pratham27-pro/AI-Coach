@@ -184,7 +184,7 @@ const Workout = () => {
   };
 
   const handleExerciseClick = (exerciseName) => {
-    navigate(`/posture-detection/${exerciseName}`);
+    navigate(`/posture-detection/${exerciseName.toLowerCase().replace(/\s+/g, '-')}`);
   };
 
   // Loading state during auth check

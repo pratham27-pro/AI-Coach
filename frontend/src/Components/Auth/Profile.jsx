@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useFormData } from "../FormDataContext.jsx";  // Import context
 import { useDispatch, useSelector } from "react-redux";
@@ -17,6 +17,15 @@ const Profile = () => {
   const [step, setStep] = useState(1);
 
   const { currentUser, loading, error } = useSelector((state) => state.user);
+
+  useEffect(() => {
+    if (currentUser && 
+        currentUser.fitnessDetails && 
+        currentUser.medicalConditions && 
+        currentUser.allergies) {
+      navigate("/workout");
+    }
+  }, [currentUser, navigate]);
 
   // Handle next step
   const nextStep = () => {
@@ -37,9 +46,18 @@ const Profile = () => {
   const handleSubmit = async () => {
     dispatch(signinStart()); 
     try {
-      const response = await axios.post("http://localhost:5000/api/signup", formData);
+      
+      const endpoint = "http://localhost:5000/api/signup";
+    const payload = {
+      ...formData,
+      _id: currentUser?._id // Include the ID if it exists
+    };
+    
+    const response = await axios.post(endpoint, payload);
+
       // Merge form data with user data in Redux
       const userData = {
+        ...(currentUser || {}),
         ...response.data.user,
         ...formData,
         fitnessDetails: formData.fitnessDetails,
