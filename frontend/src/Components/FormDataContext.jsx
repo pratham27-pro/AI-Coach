@@ -5,49 +5,45 @@ const FormDataContext = createContext();
 
 // Create a provider component
 export function FormDataProvider({ children }) {
-  const [formData, setFormData] = useState({
-    // Initial form data structure with all needed fields
-    name: '',
-    email: '',
-    password: '',
-    height: '',
-    weight: '',
-    gender: '',
-    fitnessGoal: '',
-    medicalConditions: {
-      conditions: [],
-      otherDisease: ''
-    },
-    fitnessDetails: {
-      fitnessLevel: '',
-      dietType: '',
-      activityLevel: ''
-    },
-    allergies: {
-      allergies: [],
-      otherAllergy: ''
-    },
-    // Gender-specific data
-    menstrualCyclePhase: null,
-    lastPeriodDate: null,
-    cycleLength: 28, // Default cycle length
+  const [formData, setFormData] = useState(() => {
+    const savedData = localStorage.getItem('formData');
+    console.log("The saved data from the local storage is: ", savedData);
+    return savedData ? JSON.parse(savedData) : {
+      // Initialize with empty default structure
+      fitnessDetails: {},
+      medicalConditions: {},
+      allergies: {}
+    };
   });
 
-  // Update form data function that properly handles nested objects
+  // Update form data function
   const updateFormData = (newData) => {
-    setFormData((prevData) => {
+    setFormData(prevData => {
       const updatedData = { ...prevData };
-      
-      // Handle regular key-value pairs
+
+      // Handle nested objects properly
       Object.entries(newData).forEach(([key, value]) => {
-        // If this is an object and already exists in the prevData, merge it
-        if (typeof value === 'object' && value !== null && key in prevData && prevData[key] !== null) {
-          updatedData[key] = { ...prevData[key], ...value };
+        if (
+          typeof value === 'object' && 
+          value !== null && 
+          key in prevData && 
+          typeof prevData[key] === 'object'
+        ) {
+          // Merge nested objects
+          updatedData[key] = {
+            ...prevData[key],
+            ...value
+          };
         } else {
+          // Set non-object values directly
           updatedData[key] = value;
         }
       });
-      
+
+      // Save to localStorage after updating
+      localStorage.setItem('formData', JSON.stringify(updatedData));
+      console.log("Saving updated form data:", updatedData);
+
       return updatedData;
     });
   };
@@ -61,5 +57,9 @@ export function FormDataProvider({ children }) {
 
 // Custom hook to use the form data context
 export function useFormData() {
-  return useContext(FormDataContext);
+  const context = useContext(FormDataContext);
+  if (!context) {
+    throw new Error('useFormData must be used within a FormDataProvider');
+  }
+  return context;
 }

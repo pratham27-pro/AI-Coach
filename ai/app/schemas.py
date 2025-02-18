@@ -10,6 +10,9 @@ class UserSync(BaseModel):
     fitness_goal: str
     fitness_level: int
     available_equipment: List[str]
+    hashed_password: Optional[str] = None
+    class Config:
+        orm_mode = True
 
 class WorkoutRequestFromFrontend(BaseModel):
     userId: Optional[str] = None

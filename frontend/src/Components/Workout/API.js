@@ -41,14 +41,20 @@ export const syncUserData = async (userData) => {
       email: userData.email || 'unknown@example.com',
       fitness_goal: userData.fitnessGoal || 'general',
       fitness_level: transformFitnessLevelToInt(userData.fitnessDetails?.fitnessLevel), // Convert string to int
-      available_equipment: [] 
+      available_equipment: [],
+      hashed_password: null
     };
 
     console.log('Transformed PostgreSQL data:', userDataForPostgres);
 
     const response = await axios.post(
       `${API_BASE_URL}/sync-user`,
-      userDataForPostgres
+      userDataForPostgres,
+      {
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      }
     );
     console.log('User data synced successfully:', response.data);
     return response.data;

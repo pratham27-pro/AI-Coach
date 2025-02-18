@@ -69,14 +69,18 @@ const Workout = () => {
   useEffect(() => {
     const fetchWorkoutPlan = async () => {
       if (authLoading) {
+        console.log("Authentication is still loading...");
         return;
       }
       
       if (!currentUser || !currentUser._id) {
+        console.log("No authenticated user found");
+        setError("Please sign in to view your workout plan");
         return;
       }
       
       if (!formData) {
+        console.log("The form data is missing.")
         return;
       }
       
@@ -87,6 +91,31 @@ const Workout = () => {
 
       setLoading(true);
       setError("");
+
+      const fitnessData = {
+        fitnessGoal: currentUser.fitnessGoal || formData?.fitnessGoal,
+        fitnessLevel: currentUser.fitnessDetails?.fitnessLevel || formData?.fitnessDetails?.fitnessLevel,
+        dietType: currentUser.fitnessDetails?.dietType || formData?.fitnessDetails?.dietType,
+        activityLevel: currentUser.fitnessDetails?.activityLevel || formData?.fitnessDetails?.activityLevel
+      };
+    
+      console.log('Fitness data check:', fitnessData); // Debug log
+    
+      const missingFields = [];
+      if (!fitnessData.fitnessGoal) missingFields.push('Fitness Goal');
+      if (!fitnessData.fitnessLevel) missingFields.push('Fitness Level');
+      if (!fitnessData.dietType) missingFields.push('Diet Type');
+      if (!fitnessData.activityLevel) missingFields.push('Activity Level');
+    
+      setProfileComplete(missingFields.length === 0);
+    
+      if (missingFields.length > 0) {
+        setError(`Please complete your profile by providing: ${missingFields.join(', ')}`);
+        console.log(`Profile incomplete, missing: ${missingFields.join(', ')}`);
+      } else {
+        setError("");
+        console.log("Profile is complete, ready to fetch workout plan");
+      }
 
       try {
         console.log('Current user:', currentUser);

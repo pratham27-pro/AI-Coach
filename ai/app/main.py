@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, Depends
+from fastapi import FastAPI, HTTPException, Depends, Request
 from sqlalchemy.orm import Session
 from . import models, schemas
 from .recommendation.engine import WorkoutRecommender
@@ -10,6 +10,7 @@ from sqlalchemy.ext.declarative import declarative_base
 import os
 from typing import List, Dict, Any
 from .recommendation import utils
+import logging
 
 load_dotenv()
 
@@ -26,6 +27,20 @@ engine = create_engine(SQLALCHEMY_DATABASE_URL)
 # Create a sessionmaker factory
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
+# models.Base.metadata.create_all(bind=engine)
+
+def init_db():
+    try:
+        # Create tables
+        models.Base.metadata.create_all(bind=engine)
+        print("Database tables created successfully")
+    except Exception as e:
+        print(f"Error creating database tables: {e}")
+        raise
+
+# Initialize the database
+init_db()
+
 # Base class for the models
 Base = declarative_base()
 
@@ -37,13 +52,11 @@ def get_db():
     finally:
         db.close()  # Make sure to close the session when done
 
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 app = FastAPI()
 recommender = WorkoutRecommender()
-
-@app.get("/")
-def read_root():
-    return {"message": "AI coach AI is working! Yoo-hoo!!"}
 
 app.add_middleware(
     CORSMiddleware,
@@ -53,11 +66,18 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+@app.get("/")
+def read_root():
+    return {"message": "AI coach AI is working! Yoo-hoo!!"}
+
 @app.post("/api/sync-user")
 async def sync_user(
+    request: Request,
     user_data: schemas.UserSync,
     db: Session = Depends(get_db)
 ):
+    logger.info(f"Received sync-user request: {user_data.dict()}")
+
     # Check if user already exists
     user = db.query(models.User).filter(models.User.id == user_data.id).first()
     
@@ -74,6 +94,7 @@ async def sync_user(
         db.commit()
         return {"status": "success", "user_id": user.id}
     except Exception as e:
+        logger.error(f"Error in sync_user: {str(e)}")
         db.rollback()
         raise HTTPException(status_code=400, detail=str(e))
     
@@ -187,3 +208,12 @@ async def submit_feedback(
     
     db.commit()
     return {"status": "success"}
+
+def reset_database():
+    print("Dropping all tables...")
+    models.Base.metadata.drop_all(bind=engine)
+    print("Creating all tables...")
+    models.Base.metadata.create_all(bind=engine)
+    print("Database reset complete")
+
+# reset_database() 

@@ -1,11 +1,28 @@
 import React from "react";
+import { useFormData } from "../FormDataContext.jsx";
 
 const Fitness = ({
-  formData, handleChange, nextStep, prevStep
+  // formData, handleChange, nextStep, prevStep
+  nextStep, prevStep
 }) => {
+
+  const { formData, updateFormData } = useFormData();
+
+  const handleChange = (updates) => {
+    // Merge the updates with the existing formData
+    updateFormData({
+      ...formData,
+      ...updates,
+      // If updates contain fitnessDetails, merge them properly
+      fitnessDetails: updates.fitnessDetails 
+        ? { ...formData.fitnessDetails, ...updates.fitnessDetails }
+        : formData.fitnessDetails
+    });
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
-    handleChange({
+    updateFormData({
 
       fitnessGoal: formData.fitnessGoal,
 
@@ -18,6 +35,7 @@ const Fitness = ({
       cycleLength: formData.cycleLength,
       lastPeriodDate: formData.lastPeriodDate,
     });
+    console.log("Updated fitness data:", formData);
     nextStep(); // Move to the next step
   };
 

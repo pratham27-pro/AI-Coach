@@ -41,11 +41,16 @@ const Profile = () => {
       // Merge form data with user data in Redux
       const userData = {
         ...response.data.user,
+        ...formData,
         fitnessDetails: formData.fitnessDetails,
         medicalConditions: formData.medicalConditions,
         allergies: formData.allergies
       };
+      console.log("Dispatching user data:", userData);
       dispatch(signinSuccess(userData));
+    
+    // Clear form data after successful submission
+      localStorage.removeItem('formData');
       navigate("/workout");
     } catch (error) {
       dispatch(signinFailure(error.message));
