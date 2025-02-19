@@ -5,6 +5,34 @@ import * as poseDetection from '@tensorflow-models/pose-detection';
 import { useParams, useNavigate } from 'react-router-dom';
 
 const exerciseFormChecks = {
+  // test exercise
+  'neck-posture': {
+  name: 'Neck Posture Check',
+  type: 'test',
+  keypoints: ['nose', 'left_ear', 'right_ear', 'left_eye', 'right_eye', 'left_shoulder', 'right_shoulder'],
+  targetReps: 5,
+  checks: [
+    {
+      name: 'headTilt',
+      points: ['left_ear', 'nose', 'right_ear'],
+      range: { min: 170, max: 190 }, // Almost straight line for head level
+      message: "Keep your head level - don't tilt left or right"
+    },
+    {
+      name: 'neckForward',
+      points: ['nose', 'left_ear', 'left_shoulder'],
+      range: { min: 70, max: 100 }, // Checks for forward head posture
+      message: "Keep your head back - don't lean forward"
+    },
+    {
+      name: 'shoulderLevel',
+      points: ['left_shoulder', 'right_shoulder', 'nose'],
+      range: { min: 170, max: 190 }, // Shoulders should be level
+      message: "Keep your shoulders level"
+    }
+  ]
+}, 
+  
   // Strength Exercises
   'push-ups': {
     name: 'Push-ups',
@@ -226,12 +254,19 @@ const PoseDetection = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const videoRef = useRef(null);
+  const canvasRef = useRef(null);
   const [detector, setDetector] = useState(null);
   const [exercise, setExercise] = useState(null);
   const [feedback, setFeedback] = useState(null);
   const [isRecording, setIsRecording] = useState(false);
   const [repCount, setRepCount] = useState(0);
   const [goodFormStreak, setGoodFormStreak] = useState(0);
+  const [currentPose, setCurrentPose] = useState(null);
+  const detectionLoopRef = useRef(null);
+  const [isVideoReady, setIsVideoReady] = useState(false);
+  const [elapsedTime, setElapsedTime] = useState(0);
+
+  const isDetectionRunning = useRef(false);
 
   useEffect(() => {
     const exerciseId = id.toLowerCase().replace(/\s+/g, '-');
@@ -248,7 +283,11 @@ const PoseDetection = () => {
 
   useEffect(() => {
     const initPoseDetection = async () => {
+      console.log('1. Starting initialization...'); // Debug log
+
       await tf.ready();
+      console.log('2. TensorFlow.js is ready'); 
+
       const detector = await poseDetection.createDetector(
         poseDetection.SupportedModels.BlazePose,
         {
@@ -259,11 +298,52 @@ const PoseDetection = () => {
       setDetector(detector);
 
       try {
-        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        console.log('3. Creating detector...');
+
+        const detector = await poseDetection.createDetector(
+          poseDetection.SupportedModels.BlazePose,
+          {
+            runtime: 'tfjs',
+            modelType: 'full'
+          }
+        );
+        console.log('4. Detector created successfully'); // Debug log
+        setDetector(detector);
+
+        const stream = await navigator.mediaDevices.getUserMedia({ 
+          video: { 
+            width: { ideal: 640 },
+            height: { ideal: 480 }
+          } 
+        });
+        console.log('5. Got camera stream');
+
         if (videoRef.current) {
           videoRef.current.srcObject = stream;
+          // Wait for video to be ready
+          videoRef.current.onloadedmetadata = () => {
+            console.log('6. Video metadata loaded');
+            videoRef.current.play();
+            // Set canvas size to match video
+            if (canvasRef.current) {
+              canvasRef.current.width = videoRef.current.videoWidth;
+              canvasRef.current.height = videoRef.current.videoHeight;
+
+              console.log('7. Canvas size set:', {
+                width: canvasRef.current.width,
+                height: canvasRef.current.height
+              });
+              
+              setTimeout(() => {
+                setIsVideoReady(true);
+                console.log('Video is now fully ready');
+              }, 500);
+
+            }
+          };
         }
       } catch (error) {
+        console.error('Initialization error:', error);
         setFeedback({
           message: "Camera access denied. Please check permissions.",
           type: 'error'
@@ -274,13 +354,142 @@ const PoseDetection = () => {
     initPoseDetection();
 
     return () => {
+      if (detectionLoopRef.current) {
+        cancelAnimationFrame(detectionLoopRef.current);
+      }
       if (videoRef.current?.srcObject) {
         videoRef.current.srcObject.getTracks().forEach(track => track.stop());
       }
     };
   }, []);
 
+  const drawPose = (pose) => {
+    if (!canvasRef.current || !videoRef.current || !exercise) {
+      console.log('Cannot draw pose: missing required refs or exercise data');
+      return;
+    }
+
+    const ctx = canvasRef.current.getContext('2d');
+    if (!ctx) return;
+
+    ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
+
+    //debug
+    console.log('Drawing pose on canvas:', {
+      canvasWidth: canvasRef.current.width,
+      canvasHeight: canvasRef.current.height,
+      videoWidth: videoRef.current.videoWidth,
+      videoHeight: videoRef.current.videoHeight,
+      keypoints: pose.keypoints.length
+    });
+
+    // Set canvas dimensions to match video
+    const videoWidth = videoRef.current.videoWidth;
+    const videoHeight = videoRef.current.videoHeight;
+    canvasRef.current.width = videoWidth;
+    canvasRef.current.height = videoHeight;
+
+    // Draw keypoints
+    pose.keypoints.forEach((keypoint) => {
+      if (keypoint.score > 0.3) {
+        ctx.beginPath();
+        ctx.arc(keypoint.x, keypoint.y, 4, 0, 2 * Math.PI);
+        ctx.fillStyle = exercise.keypoints.includes(keypoint.name) ? '#00ff00' : '#ffffff';
+        ctx.fill();
+
+        ctx.fillStyle = '#FFFFFF';
+        ctx.font = '10px Arial';
+        ctx.fillText(keypoint.name, keypoint.x + 5, keypoint.y - 5);
+      }
+    });
+
+    // Draw connections
+    const connections = [
+      ['nose', 'left_eye'], ['left_eye', 'left_ear'],
+      ['nose', 'right_eye'], ['right_eye', 'right_ear'],
+      ['left_shoulder', 'right_shoulder'],
+      ['left_shoulder', 'left_elbow'], ['left_elbow', 'left_wrist'],
+      ['right_shoulder', 'right_elbow'], ['right_elbow', 'right_wrist'],
+      ['left_shoulder', 'left_hip'], ['right_shoulder', 'right_hip'],
+      ['left_hip', 'right_hip'],
+      ['left_hip', 'left_knee'], ['left_knee', 'left_ankle'],
+      ['right_hip', 'right_knee'], ['right_knee', 'right_ankle']
+    ];
+
+    let drawnConnections = 0;
+
+    connections.forEach(([p1, p2]) => {
+      const point1 = pose.keypoints.find(kp => kp.name === p1);
+      const point2 = pose.keypoints.find(kp => kp.name === p2);
+
+      if (point1?.score > 0.3 && point2?.score > 0.3) {
+        ctx.beginPath();
+        ctx.moveTo(point1.x, point1.y);
+        ctx.lineTo(point2.x, point2.y);
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        drawnConnections++;
+      }
+    });
+
+    console.log(`Drew ${drawnConnections} connections`);
+
+    // Draw angles for current exercise
+    if (exercise.checks) {
+      let drawnAngles = 0;
+
+      exercise.checks.forEach(check => {
+        if (check.points && check.points.length === 3) {
+          const points = check.points.map(p => pose.keypoints.find(kp => kp.name === p));
+
+          console.log('Angle check points:', {
+            names: check.points,
+            found: points.map(p => p ? `${p.name} (${p.score.toFixed(2)})` : 'missing'),
+            valid: points.every(p => p?.score > 0.3)
+          });
+
+          if (points.every(p => p?.score > 0.3)) {
+            const angle = calculateAngle(
+              { x: points[0].x, y: points[0].y },
+              { x: points[1].x, y: points[1].y },
+              { x: points[2].x, y: points[2].y }
+            );
+            
+            if (angle !== null) {
+              const midPoint = points[1];
+              
+              // Draw angle arc
+              ctx.beginPath();
+              ctx.arc(midPoint.x, midPoint.y, 30, 0, (angle * Math.PI) / 180);
+              ctx.strokeStyle = (angle >= check.range.min && angle <= check.range.max) ? '#00ff00' : '#ff0000';
+              ctx.lineWidth = 2;
+              ctx.stroke();
+              
+              // Draw angle text
+              ctx.font = '16px Arial';
+              ctx.fillStyle = '#ffffff';
+              ctx.fillText(`${Math.round(angle)}°`, midPoint.x + 35, midPoint.y);
+
+              drawnAngles++;
+              
+              console.log('Drew angle:', {
+                points: check.points,
+                angle,
+                inRange: (angle >= check.range.min && angle <= check.range.max)
+              });
+            }
+          }
+        }
+      });
+      console.log(`Drew ${drawnAngles} angles`);
+    }
+  };
+
   const checkForm = (pose, exercise) => {
+
+    if (!pose || !exercise) return { message: "Waiting for detection...", type: 'warning', isGoodForm: false };
+
     const keypoints = pose.keypoints;
     const keypointMap = Object.fromEntries(keypoints.map(kp => [kp.name, kp]));
 
@@ -313,6 +522,7 @@ const PoseDetection = () => {
 
     for (const check of exercise.checks) {
       const points = check.points.map(p => keypointMap[p]);
+      const formattedPoints = points.map(p => p && { x: p.x, y: p.y });
       const angle = calculateAngle(...points);
 
       if (angle === null) continue;
@@ -329,38 +539,82 @@ const PoseDetection = () => {
     };
   };
 
+  const startDetectionLoop = () => {
+    if (isDetectionRunning.current) return;
+    
+    isDetectionRunning.current = true;
+    console.log('Starting continuous detection loop');
+    detectPose();
+  };
+  
   const detectPose = async () => {
-    if (!detector || !videoRef.current || !isRecording || !exercise) return;
+    // Check if all conditions for detection are met
+    if (!detector || !videoRef.current || !isVideoReady || !canvasRef.current) {
+      console.log('Not ready yet:', {
+        detector: !!detector,
+        video: !!videoRef.current,
+        canvas: !!canvasRef.current,
+        isVideoReady
+      });
+      
+      // Continue the loop even if not ready
+      if (isDetectionRunning.current) {
+        detectionLoopRef.current = requestAnimationFrame(detectPose);
+      }
+      return;
+    }
 
     try {
-      const poses = await detector.estimatePoses(videoRef.current);
+      console.log('Detecting poses...');
+      const poses = await detector.estimatePoses(videoRef.current, {
+        flipHorizontal: false
+      });
       
       if (poses.length > 0) {
-        const formCheck = checkForm(poses[0], exercise);
-        setFeedback(formCheck);
+        console.log('Pose detected with keypoints:', poses[0].keypoints.length);
 
-        if (formCheck.isGoodForm) {
-          setGoodFormStreak(prev => prev + 1);
-          if (goodFormStreak >= 30) { // About 1 second of good form
-            setRepCount(prev => prev + 1);
+        // Store current pose and draw it
+        setCurrentPose(poses[0]);
+        drawPose(poses[0]);
+
+        // Handle rep counting if recording is active
+        if (isRecording && exercise) {
+          const formCheck = checkForm(poses[0], exercise);
+          setFeedback(formCheck);
+
+          if (formCheck.isGoodForm) {
+            setGoodFormStreak(prev => {
+              const newStreak = prev + 1;
+              console.log(`Good form streak: ${newStreak}`);
+              return newStreak;
+            });
+            
+            if (goodFormStreak >= 30) {
+              setRepCount(prev => {
+                const newCount = prev + 1;
+                console.log(`Rep count increased to ${newCount}`);
+                return newCount;
+              });
+              setGoodFormStreak(0);
+            }
+          } else {
+            if (goodFormStreak > 0) {
+              console.log("Breaking streak due to bad form");
+            }
             setGoodFormStreak(0);
           }
-        } else {
-          setGoodFormStreak(0);
+          
+          if (repCount >= (exercise.targetReps || 0)) {
+            setIsRecording(false);
+            setFeedback({
+              message: "Great job! Exercise completed!",
+              type: 'success'
+            });
+            setTimeout(() => navigate('/workout'), 3000);
+          }
         }
-
-        if (repCount >= exercise.targetReps) {
-          setIsRecording(false);
-          setFeedback({
-            message: "Great job! Exercise completed!",
-            type: 'success'
-          });
-          setTimeout(() => navigate('/workout'), 3000);
-        }
-      }
-
-      if (isRecording) {
-        requestAnimationFrame(detectPose);
+      } else {
+        console.log('No poses detected in this frame');
       }
     } catch (error) {
       console.error('Pose detection error:', error);
@@ -369,13 +623,19 @@ const PoseDetection = () => {
         type: 'error'
       });
     }
+    
+    // Continue the loop only if we're still supposed to be running
+    if (isDetectionRunning.current) {
+      detectionLoopRef.current = requestAnimationFrame(detectPose);
+    }
   };
 
   useEffect(() => {
-    if (isRecording) {
-      detectPose();
+    if (detector && isVideoReady && !isDetectionRunning.current) {
+      console.log('Everything ready, starting detection loop');
+      startDetectionLoop();
     }
-  }, [isRecording, detector, exercise]);
+  }, [detector, isVideoReady]);
 
   return (
     <div className="max-w-4xl mx-auto p-4">
@@ -409,6 +669,13 @@ const PoseDetection = () => {
             className="w-full h-[600px] object-cover"
             autoPlay
             playsInline
+            muted
+          />
+
+          <canvas
+            ref={canvasRef}
+            className="absolute top-0 left-0 w-full h-full"
+            style={{ backgroundColor: 'transparent' }}
           />
           
           {/* Rep Counter */}
@@ -418,6 +685,35 @@ const PoseDetection = () => {
             </p>
           </div>
         </div>
+
+        {/* Form Guide */}
+          <div className="absolute bottom-4 left-4 bg-white/90 p-4 rounded-lg shadow-lg max-w-sm">
+            <h3 className="font-medium mb-2">Form Guide</h3>
+            <ul className="space-y-2">
+              {exercise?.checks.map((check, index) => (
+                <li key={index} className="flex items-center gap-2">
+                  <div className={`w-3 h-3 rounded-full ${
+                    currentPose && checkForm(currentPose, { checks: [check] }).isGoodForm
+                      ? 'bg-green-500'
+                      : 'bg-red-500'
+                  }`} />
+                  {check.message}
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div className="absolute top-4 left-4 bg-white/90 px-4 py-2 rounded-lg shadow-lg">
+            <p className="text-sm font-mono">
+              Status: {isRecording ? 'Recording' : 'Ready'}
+            </p>
+            <p className="text-sm font-mono">
+              Reps: {repCount}
+            </p>
+            <p className="text-sm font-mono">
+              Streak: {goodFormStreak}
+            </p>
+          </div>
 
         {/* Feedback Alert */}
         {feedback && (
@@ -431,6 +727,14 @@ const PoseDetection = () => {
             <p className="font-medium">{feedback.message}</p>
           </div>
         )}
+
+        <div className="absolute top-4 left-4 bg-black/50 text-white px-4 py-2 rounded-lg">
+        <p>Detector: {detector ? 'Ready ✓' : 'Loading...'}</p>
+          <p>Video: {videoRef.current?.readyState === 4 ? 'Ready ✓' : 'Loading...'}</p>
+          <p>Canvas: {canvasRef.current ? 'Ready ✓' : 'Loading...'}</p>
+          <p>Detection Active: {isDetectionRunning.current ? 'Yes ✓' : 'No'}</p>
+          <p>Video Ready State: {isVideoReady ? 'Ready ✓' : 'Initializing...'}</p>
+          </div>
       </div>
     </div>
   );
